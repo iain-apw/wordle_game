@@ -16,6 +16,7 @@ func NewGames() (*GameDB, error) {
 		models.NewGame(5, &models.User{ID: "12345", Name: "Numbers"}),
 		models.NewGame(6, &models.User{ID: "ABCDE", Name: "Letters"}),
 		models.NewGame(5, &models.User{ID: "Jeff", Name: "Jeffrey"}),
+		models.NewGame(9, &models.User{ID: "Mitch", Name: "David Mitchell"}),
 	}
 
 	g := &GameDB{
