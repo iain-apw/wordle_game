@@ -53,6 +53,19 @@ func (g *GameDB) FindById(id string) (models.Game, error) {
 	return matchedGame, nil
 }
 
+// Find all games by user
+func (g *GameDB) FindAllByUser(userID string) ([]models.Game, error) {
+	userGames := []models.Game{}
+
+	for _, game := range g.games {
+		if game.UserId == userID {
+			userGames = append(userGames, game)
+		}
+	}
+
+	return userGames, nil
+}
+
 // AddGame Adds a new game to the system
 func (g *GameDB) AddGame(newGame models.Game) (models.Game, error) {
 	//var allGames []models.Game

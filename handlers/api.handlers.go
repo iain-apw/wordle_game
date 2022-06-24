@@ -57,6 +57,8 @@ func InitApiRoutes() (*mux.Router, error) {
 	}
 
 	router.Methods("GET").Path("/games").Handler(http.HandlerFunc(gameHandler.GetAllGames))
+	router.Methods("GET").Path("/games/current").Handler(requireAuth(http.HandlerFunc(gameHandler.GetCurrentGame)))
+
 	router.Methods("GET").Path("/games/{gameId}").Handler(http.HandlerFunc(gameHandler.GetGame))
 	router.Methods("POST").Path("/games/create").Handler(requireAuth(http.HandlerFunc(gameHandler.CreateGame)))
 

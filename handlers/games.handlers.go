@@ -18,6 +18,7 @@ type Handler interface {
 	GetAllGames(w http.ResponseWriter, req *http.Request)
 	GetGame(w http.ResponseWriter, req *http.Request)
 	CreateGame(w http.ResponseWriter, req *http.Request)
+	GetCurrentGame(w http.ResponseWriter, r *http.Request)
 }
 
 func New() (Handler, error) {
@@ -46,6 +47,25 @@ func (h *handler) GetGame(w http.ResponseWriter, r *http.Request) {
 	gameId := vars["gameId"]
 
 	game, err := h.repo.GetGame(gameId)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(game)
+}
+
+func (h *handler) GetCurrentGame(w http.ResponseWriter, r *http.Request) {
+	user, err := ctx.GetUserFromContext(r.Context())
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	game, err := h.repo.GetCurrentGame(user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)

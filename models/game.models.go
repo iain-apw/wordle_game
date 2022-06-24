@@ -9,7 +9,6 @@ import (
 type GameStatus string
 
 const (
-	GameStatus_New        GameStatus = "New"
 	GameStatus_Won        GameStatus = "Won"
 	GameStatus_Lost       GameStatus = "Lost"
 	GameStatus_InProgress GameStatus = "InProgress"
@@ -30,7 +29,7 @@ func NewGame(letters int, user *User) Game {
 		ID:        uuid.New().String(),
 		UserId:    user.ID,
 		Letters:   letters,
-		Status:    GameStatus_New,
+		Status:    GameStatus_InProgress,
 		CreatedAt: time.Now(),
 	}
 }
