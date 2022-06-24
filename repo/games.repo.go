@@ -81,6 +81,8 @@ func (r *gamesRepo) CreateGame(request models.CreateGameRequest, user *models.Us
 		return currentGame, fmt.Errorf("game %s already in progress", currentGame.ID)
 	}
 
+	// Generate a new word from the word lists
+
 	newGame := models.NewGame(request.Letters, user)
 	r.games.AddGame(newGame)
 	return newGame, nil
