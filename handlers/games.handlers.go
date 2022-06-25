@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/iain-apw/wordle_game/ctx"
+	"github.com/iain-apw/wordle_game/helpers"
 	"github.com/iain-apw/wordle_game/models"
 	"github.com/iain-apw/wordle_game/repo"
 )
@@ -19,6 +20,7 @@ type Handler interface {
 	GetGame(w http.ResponseWriter, req *http.Request)
 	CreateGame(w http.ResponseWriter, req *http.Request)
 	GetCurrentGame(w http.ResponseWriter, r *http.Request)
+	MakeGuess(w http.ResponseWriter, r *http.Request)
 }
 
 func New() (Handler, error) {
@@ -102,4 +104,58 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(game)
+}
+
+func (h *handler) MakeGuess(w http.ResponseWriter, r *http.Request) {
+	var request models.MakeGuessRequest
+
+	// Read the request body
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user, err := ctx.GetUserFromContext(r.Context())
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Get Current Game
+	game, err := h.repo.GetCurrentGame(user)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Is word valid?
+	isValid, err := helpers.IsValidWord(request.Guess, game.Letters)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var response = models.MakeGuessResponse{
+		IsValidWord: isValid,
+		Guess:       models.Guess{},
+	}
+
+	if isValid {
+		response.Guess = helpers.CheckGuess(request.Guess, game.Answer)
+
+		updatedGame, err := h.repo.UpdateGame(game.ID, response.Guess)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response.Game = updatedGame
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

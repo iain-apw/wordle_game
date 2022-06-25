@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	"github.com/iain-apw/wordle_game/helpers"
 	"github.com/iain-apw/wordle_game/models"
 )
 
@@ -13,10 +14,10 @@ type GameDB struct {
 // NewGames creates a new empty games db
 func NewGames() (*GameDB, error) {
 	var games = []models.Game{
-		models.NewGame(5, &models.User{ID: "12345", Name: "Numbers"}),
-		models.NewGame(6, &models.User{ID: "ABCDE", Name: "Letters"}),
-		models.NewGame(5, &models.User{ID: "Jeff", Name: "Jeffrey"}),
-		models.NewGame(9, &models.User{ID: "Mitch", Name: "David Mitchell"}),
+		helpers.NewGame(5, &models.User{ID: "12345", Name: "Numbers"}),
+		helpers.NewGame(6, &models.User{ID: "ABCDE", Name: "Letters"}),
+		helpers.NewGame(5, &models.User{ID: "Jeff", Name: "Jeffrey"}),
+		helpers.NewGame(9, &models.User{ID: "Mitch", Name: "David Mitchell"}),
 	}
 
 	g := &GameDB{
@@ -72,4 +73,23 @@ func (g *GameDB) AddGame(newGame models.Game) (models.Game, error) {
 	g.games = append(g.games, newGame)
 
 	return newGame, nil
+}
+
+func (g *GameDB) UpdateGame(updatedGame models.Game) (models.Game, error) {
+	updated := false
+
+	for i := 0; i < len(g.games); i++ {
+
+		if g.games[i].ID == updatedGame.ID {
+			g.games[i] = updatedGame
+			updated = true
+			break
+		}
+	}
+
+	if !updated {
+		return models.Game{}, fmt.Errorf("game id %s not found", updatedGame.ID)
+	}
+
+	return updatedGame, nil
 }

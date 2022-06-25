@@ -61,6 +61,7 @@ func InitApiRoutes() (*mux.Router, error) {
 
 	router.Methods("GET").Path("/games/{gameId}").Handler(http.HandlerFunc(gameHandler.GetGame))
 	router.Methods("POST").Path("/games/create").Handler(requireAuth(http.HandlerFunc(gameHandler.CreateGame)))
+	router.Methods("POST").Path("/games/guess").Handler(requireAuth(http.HandlerFunc(gameHandler.MakeGuess)))
 
 	return router, nil
 }

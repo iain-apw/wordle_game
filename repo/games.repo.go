@@ -2,8 +2,10 @@ package repo
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/iain-apw/wordle_game/db"
+	"github.com/iain-apw/wordle_game/helpers"
 	"github.com/iain-apw/wordle_game/models"
 )
 
@@ -23,6 +25,7 @@ type GamesRepo interface {
 	GetGame(id string) (models.Game, error)
 	GetCurrentGame(user *models.User) (models.Game, error)
 	CreateGame(request models.CreateGameRequest, user *models.User) (models.Game, error)
+	UpdateGame(id string, guess models.Guess) (models.Game, error)
 }
 
 // New creates a new  GamesRepo with the correct database dependencies
@@ -83,7 +86,35 @@ func (r *gamesRepo) CreateGame(request models.CreateGameRequest, user *models.Us
 
 	// Generate a new word from the word lists
 
-	newGame := models.NewGame(request.Letters, user)
+	newGame := helpers.NewGame(request.Letters, user)
 	r.games.AddGame(newGame)
 	return newGame, nil
+}
+
+func (r *gamesRepo) UpdateGame(id string, guess models.Guess) (models.Game, error) {
+	game, err := r.games.FindById(id)
+
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	// Update the game
+	game.Guesses = append(game.Guesses, guess)
+
+	if guess.Correct {
+		game.Status = models.GameStatus_Won
+	} else if len(game.Guesses) == 6 { // TODO: Configurable?
+		game.Status = models.GameStatus_Lost
+	}
+
+	game.LastPlayed = time.Now()
+
+	// Save
+	updatedGame, err := r.games.UpdateGame(game)
+
+	if err != nil {
+		return models.Game{}, err
+	}
+
+	return updatedGame, nil
 }

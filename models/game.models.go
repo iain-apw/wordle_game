@@ -1,11 +1,7 @@
 package models
 
 import (
-	"log"
 	"time"
-
-	"github.com/google/uuid"
-	"github.com/iain-apw/wordle_game/helpers"
 )
 
 type GameStatus string
@@ -27,30 +23,36 @@ type Game struct {
 	LastPlayed time.Time  `json:"lastPlayed,omitempty"`
 }
 
-func NewGame(letters int, user *User) Game {
-
-	// Generate a new word
-	word, err := helpers.GenerateWord(letters)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return Game{
-		ID:        uuid.New().String(),
-		UserId:    user.ID,
-		Answer:    word,
-		Letters:   letters,
-		Status:    GameStatus_InProgress,
-		CreatedAt: time.Now(),
-	}
+type Guess struct {
+	Word string `json:"word"`
+	// Something to store the state of the guess
+	Letters []GuessLetter `json:"letters"`
+	Correct bool          `json:"correct"`
 }
 
-type Guess struct {
-	Word string
-	// Something to store the state of the guess
+type LetterStatus string
+
+const (
+	LetterStatus_Missing    LetterStatus = "Missing"
+	LetterStatus_WrongPlace LetterStatus = "WrongPlace"
+	LetterStatus_Correct    LetterStatus = "Correct"
+)
+
+type GuessLetter struct {
+	Letter string       `json:"letter"`
+	Status LetterStatus `json:"status"`
 }
 
 type CreateGameRequest struct {
 	Letters int `json:"letters"`
+}
+
+type MakeGuessRequest struct {
+	Guess string `json:"guess"`
+}
+
+type MakeGuessResponse struct {
+	IsValidWord bool  `json:"isValidWord"`
+	Guess       Guess `json:"guess,omitempty"`
+	Game        Game  `json:"game,omitempty"`
 }
